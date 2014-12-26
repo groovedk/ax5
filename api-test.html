@@ -22,31 +22,82 @@
             border-radius: 4px;
             background: #f06433;
         }
+        hr.split{
+            border-style: dashed;
+            border-width: 1px;
+        }
+
     </style>
 
 </head>
-<body>
-    <div id="progress" class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+<body custom-attr="ca">
+    <div id="progress" class="progress"><div id="progress-bar" class="progress-bar" ondblclick="alert('dbClick')"></div></div>
     <h1>AX5 API Check</h1>
     <div id="test-result" class="test-result"></div>
-    <p>tom@axisj.com - 2014-12-11</p>
+    <p id="author"  ondblclick="alert('author_dbClick')">tom@axisj.com - 2014-12-11</p>
 
     <div id="id-test"></div>
     <a class="class-text"></a>
 
-    <span data-attr="A"></span>
+    <span data-attr="A" id="test"></span>
     <div data-attr="B"></div>
 
     <script type="text/javascript">
         /*
          http://ax5.io/jsdoc/document/index.html 에 좌측메뉴 순서대로 테스트 코드를 작성을 기준으로 하지만 짝이 있는 함수일 경우 같이 작성 합니다.
          */
+        var eventChecker = '';
+        var eventCheckerFn = function(){
+            eventChecker = "click_event_on";
+        };
+
         var check_list = [
+            //ax5.util----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             {
                 label:"ax5.util.alert",
                 fn: function(){
                     return (function A(){ return typeof ax5.util.alert; })();
                 }
+            },
+            {
+                label:"ax5.util.attr",
+                fn: function(){
+                    ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "set", {"data-ax-spt":"ABCD"});
+                    ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "set", {"customn-attr-1":"ca1", "customn-attr-2":"ca2"});
+                    var getAttr = ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "data-ax-spt");
+                    var getAttr2 = ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "customn-attr-2");
+                    ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "remove", "customn-attr-1" );
+                    var getAttr3 = ax5.util.attr(ax5.util.get_elements("[data-attr=A]"), "customn-attr-1");
+
+                    return ( getAttr + " " + getAttr2  + " " + getAttr3 );
+                },
+                r:"ABCD ca2 null"
+            },
+            {
+                label:"ax5.util.clazz",
+                fn: function(){
+                    var hasResult1      = ax5.util.clazz(ax5.util.get_elements("#test-result"), "test-result");
+                    var hasResult_false = ax5.util.clazz(ax5.util.get_elements("#test-result"), "no-exist");
+                    var addResult       = ax5.util.clazz(ax5.util.get_elements("#test-result"), "add", "add-class-name");
+                    var hasResult2      = ax5.util.clazz(ax5.util.get_elements("#test-result"), "add-class-name");
+                    var removeResult    = ax5.util.clazz(ax5.util.get_elements("#test-result"), "remove", "add-class-name");
+                    var hasResult3      = ax5.util.clazz(ax5.util.get_elements("#test-result"), "add-class-name");
+                    var toggleResult    = ax5.util.clazz(ax5.util.get_elements("#test-result"), "toggle", "add-class-name");
+                    var hasResult4      = ax5.util.clazz(ax5.util.get_elements("#test-result"), "add-class-name");
+                    var toggleResult    = ax5.util.clazz(ax5.util.get_elements("#test-result"), "toggle", "add-class-name");
+                    var hasResult5      = ax5.util.clazz(ax5.util.get_elements("#test-result"), "add-class-name");
+
+                    var po = [];
+                    po.push(hasResult1);
+                    po.push(hasResult_false);
+                    po.push(hasResult2);
+                    po.push(hasResult3);
+                    po.push(hasResult4);
+                    po.push(hasResult5);
+
+                    return po.join(' ');
+                },
+                r: "true false true false true false"
             },
             {
                 label:"ax5.util.clone(object)",
@@ -67,6 +118,18 @@
                     return str_b;
                 },
                 r: "string A"
+            },
+            {
+                label:"ax5.util.create_elements",
+                fn: function(){
+                    var ele = ax5.util.create_elements("div", {id:"createEleId", class:"createEleClass"});
+                    var target = document.getElementById("test-result");
+                    target.appendChild(ele);
+
+                    //return ax5.util.is_element(document.getElementById("test-result"));
+                    return ax5.util.is_element(document.getElementById("createEleId"));
+                },
+                r: true
             },
             {
                 label:"ax5.util.each",
@@ -95,6 +158,29 @@
                 fn: function(){
                     return (function A(){ return typeof ax5.util.error; })();
                 }
+            },
+            {
+                label:"ax5.util.event_on",
+                fn: function(){
+                    var mydom = ax5.util.get_elements("#author");
+                    ax5.util.event_on(mydom, "click", eventCheckerFn);
+
+                    mydom[0].click();
+                    return eventChecker;
+                },
+                r: "click_event_on"
+            },
+            {
+                label:"ax5.util.event_off",
+                fn: function(){
+                    var mydom = ax5.util.get_elements("#author");
+                    ax5.util.event_off(mydom, "click", eventCheckerFn);
+
+                    eventChecker = "off";
+                    mydom[0].click();
+                    return eventChecker;
+                },
+                r: "off"
             },
 
             {
@@ -176,8 +262,8 @@
             {
                 label:"ax5.util.first(object)",
                 fn: function(){
-                    var aarray = {a:11, b:22, c:33, d:44};
-                    var result = ax5.util.first(aarray);
+                    var obj = {a:11, b:22, c:33, d:44};
+                    var result = ax5.util.first(obj);
 
                     return result[Object.keys(result)[0]];
                 },
@@ -194,8 +280,8 @@
             {
                 label:"ax5.util.last(object)",
                 fn: function(){
-                    var aarray = {a:11, b:22, c:33, d:44}
-                    var result = ax5.util.last(aarray);
+                    var obj = {a:11, b:22, c:33, d:44}
+                    var result = ax5.util.last(obj);
 
                     return result[Object.keys(result)[0]];
                 },
@@ -257,14 +343,38 @@
                     return ax5.util.get_elements("div.progress #progress-bar");
                 }
             },
-
             {
-                label:"ax5.util.get_elements(selecter, parent_element)",
+                label:"ax5.util.get_elements(selecter, parent_element_selecter)",
                 fn: function(){
-                    return ax5.util.get_elements("div:first-child", document.querySelector('#test-result') );
+                    return ax5.util.get_elements('div#test-result div' );
                 }
             },
+            {
+                label:"ax5.util.get_elements(selecter, parent_element_selecter)",
+                fn: function(){
+                    return ax5.util.get_element('div#test-result div' );
+                }
+            },
+            {
+                label:"ax5.util.get_element_right",
+                fn: function(){
+                    var tg = ax5.util.get_element("#progress-bar");
+                    var cond = {
+                        tagname: "div",
+                        clazz:"progress"
 
+                        //,"custom-attr":"ca"
+                    };
+                    /*
+                     var cond = {
+                     tagname: "body"
+                     //,"custom-attr":"ca"
+                     };
+                    */
+
+                    return ax5.util.get_element_right(tg, cond);
+                }
+            },
             {
                 label:"ax5.util.get_type",
                 fn: function(){
@@ -296,6 +406,12 @@
                 fn: function(){
                     var a = function(){};
                     return ax5.util.is_function(a);
+                }
+            },
+            {
+                label:"ax5.util.is_nodelist",
+                fn: function(){
+                    return ax5.util.is_nodelist(document.querySelectorAll('div'));
                 }
             },
             {
@@ -399,6 +515,28 @@
                 r    : "ready-response"
             },
             {
+                label: "ax5.util.require(not found), fail is OK",
+                fn   : function (callBack) {
+                    ax5.util.require(["src/ax5_class_sample_not_found.js"], function(){
+                        callBack(true);
+                    }, function(){
+                        callBack(false);
+                    });
+                },
+                r    : "ready-response"
+            },
+            {
+                label: "ax5.util.require(large file)",
+                fn   : function (callBack) {
+                    ax5.util.require(["src/ax5_large_class_sample.js?v="+parseInt(Math.random()*100) ], function(){
+                        callBack(true);
+                    }, function(){
+                        callBack(false);
+                    });
+                },
+                r    : "ready-response"
+            },
+            {
                 label: "ax5.util.search",
                 fn   : function () {
                     var myArray = [0,1,2,3,4,5,6];
@@ -453,16 +591,20 @@
                 },
                 r    : "/api-test.html"
             },
+            //ax5.dom----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            {
+                label: "split"
+            },
             {
                 label: "ax5.dom('#id')",
                 fn   : function () {
-                    return ax5.util.is_element(ax5.dom("#id-test").elements[0])
+                    return ax5.util.is_element(ax5.dom("#id-test").elements[0]);
                 }
             },
             {
                 label: "ax5.dom('.class')",
                 fn   : function () {
-                    return ax5.util.is_element(ax5.dom(".class-text").elements[0])
+                    return ax5.util.is_element(ax5.dom(".class-text").elements[0]);
                 }
             },
             {
@@ -474,7 +616,7 @@
             {
                 label: "ax5.dom('[attr=value]')",
                 fn   : function () {
-                    return ax5.util.is_element(ax5.dom("[data-attr=A]").elements[0])
+                    return ax5.util.is_element(ax5.dom("[data-attr=A]").elements[0]);
                 }
             },
             {
@@ -550,35 +692,64 @@
                 var result, err_string;
 
                 if(O.r === "ready-response"){
+                    var skipFlag = false;
+
+                    /*
+                    var skipFn = setTimeout(function () {
+                        //var req = new XMLHttpRequest();
+                        //req.abort();
+                        console.log("settimeout");
+                        skipFlag = true;
+
+                        newDiv.innerHTML = "<h3 class='red'>" + O.label + " : <u>skip</u></h3>";
+                        target.appendChild(newDiv);
+                        checker(check_list.shift());
+                    }, 1000);
+                    */
+
                     O.fn(function(res){
-                        if(res){
-                            newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK</u></h3>";
-                            target.appendChild(newDiv);
-                            setTimeout(function () {
-                                checker(check_list.shift());
-                            }, 100);
+                        if (!skipFlag) {
+                            //if(skipFn) clearTimeout(skipFn);
+                            if (res) {
+                                newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK</u></h3>";
+                                target.appendChild(newDiv);
+                                setTimeout(function () {
+                                    checker(check_list.shift());
+                                }, 100);
+                            } else {
+                                newDiv.innerHTML = "<h3 class='red'>" + O.label + " : <u>fail</u></h3>";
+                                target.appendChild(newDiv);
+                                setTimeout(function () {
+                                    checker(check_list.shift());
+                                }, 100);
+                            }
                         }
                     });
                 }else{
-                    try{
-                        result = O.fn();
-                    }catch(e){
-                        err_string = e.toString();
-                        console.error(e);
-                    }
+                    if(O.label === "split") {
+                        newDiv.innerHTML = "<hr class='split' />";
+                    }else{
+                        try{
+                            result = O.fn();
+                        }catch(e){
+                            err_string = e.toString();
+                            console.error(e);
+                        }
 
-                    if (typeof O.r != "undefined" && (result == O.r)) {
-                        newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK</u></h3>";
-                    } else if (typeof O.r == "undefined" && result) {
-                        newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK : "+ result +"</u></h3>";
-                    } else {
-                        newDiv.innerHTML = "<h3 class='red'>" + O.label + " : <u>?? " + result + "["+ err_string +"]" + "</u></h3>";
+                        if (typeof O.r != "undefined" && (result == O.r)) {
+                            newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK</u></h3>";
+                        } else if (typeof O.r == "undefined" && result) {
+                            newDiv.innerHTML = "<h3 class='blue'>" + O.label + " : <u>OK : "+ result +"</u></h3>";
+                        } else {
+                            newDiv.innerHTML = "<h3 class='red'>" + O.label + " : <u>?? " + result + "["+ err_string +"]" + "</u></h3>";
+                        }
                     }
 
                     target.appendChild(newDiv);
                     setTimeout(function () {
                         checker(check_list.shift());
                     }, 10);
+
                 }
             }
             checker(check_list.shift());
